@@ -527,20 +527,6 @@ class Main:
         # Set current folder so we can find the config files
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-        # Check if GPS datafile is available
-        if not os.path.isfile("/data/db_gps_locations.csv"):
-            gps_data_fieldnames = ["address", "latitude", "longitude", "url"]
-            with open("db_gps_locations.csv", "w") as outfile:
-                writer = csv.DictWriter(
-                    outfile,
-                    fieldnames=gps_data_fieldnames,
-                    delimiter=",",
-                    quoting=csv.QUOTE_MINIMAL,
-                    lineterminator="\n",
-                )
-                writer.writeheader()
-            outfile.close()
-
         # Build dict of sensor configs
         self.sensors = {}
         sensor_names = set()
