@@ -42,7 +42,8 @@ class Database:
 
         if not os.path.exists(dbpath):
             log_message(f"Installing the database '{dbpath}'")
-            os.popen('cp /p2000.sqlite3 /data/p2000.sqlite3') 
+            proc = subprocess.Popen('cp /p2000.sqlite3 /data/p2000.sqlite3', shell=True, stdin=None, stdout=None, stderr=None, executable="/bin/bash")
+            proc.wait()
 
         try:
             dbconnection = sqlite3.connect(f"file:{dbpath}?mode=rw", uri=True)
