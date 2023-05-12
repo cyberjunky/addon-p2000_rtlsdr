@@ -36,4 +36,24 @@ It comes out of the box with the following features:
  - Code to guess and complete as much address data as possible
  - Geocode functionality using https://opencagedata.com to get rough lat/long location and maps links, fetched data is stored for future use.
 
+
+## Installation
+The installation of this add-on is pretty straightforward and not different in comparison to installing any other add-on.
+
+1. Add my add-ons repository to your home assistant instance  
+   (in supervisor addons store at top right, or click button below if you have configured my HA)  
+   [![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fcyberjunky%2Faddon-p2000_rtlsdr)
+1. Install this add-on.
+1. Click the `Save` button to store your configuration.
+1. Set the add-on options to your preferences (see documentation tab after installation)
+1. Start the add-on.
+1. Check the logs of the add-on to see if everything went well.
+
+
+Make sure your RTL-SDR dongle is inserted in the Home assistant device.  
+Place your antenna in a good location near the window, or even outside.
+
+If you don't see the wanted result, consider setting verbosity to 'debug' and restart.  
+Don't leave verbosity debug enabled for a long time, since it logs a lot of data, and can wear out your storage devices.
+
 ![Example setup](images/setup.png)
