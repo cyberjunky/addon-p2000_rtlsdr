@@ -15,6 +15,8 @@ _Receive P2000 events using Home Assistant and your RTL-SDR dongle._
 [armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
 [i386-shield]: https://img.shields.io/badge/i386-yes-green.svg
 
+![Example dashboard in Home Assistant Frontend](images/screenshot.png)
+
 ## About
 
 An all-in-one add-on for receiving P2000 events from the air, filter them as you like and update sensors with detailed information.
