@@ -36,3 +36,4 @@ It comes out of the box with the following features:
  - Code to guess and complete as much address data as possible
  - Geocode functionality using https://opencagedata.com to get rough lat/long location and maps links, fetched data is stored for future use.
 
+![Example setup](images/setup.png)
