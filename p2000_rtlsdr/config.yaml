@@ -24,7 +24,7 @@ services:
   - mqtt:need
 options:
   general:
-    verbosity: debug
+    verbosity: normal
   mqtt:
     ha_autodiscovery: true
     ha_autodiscovery_topic: homeassistant
