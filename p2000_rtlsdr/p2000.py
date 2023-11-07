@@ -134,6 +134,7 @@ class MessageItem:
         self.opencage = ""
         self.mapurl = ""
         self.distance = ""
+        self.tts = ""
 
 
 class OpenCageGeocodeError(Exception):
@@ -291,7 +292,7 @@ def p2000_get_prio(message):
 
 
 def reset_usb_device(usbdev):
-    """Rest USB device."""
+    """Reset USB device."""
 
     if usbdev is not None and ':' in usbdev:
         busnum, devnum = usbdev.split(':')
@@ -550,6 +551,18 @@ class Main:
             self.sensors[sensor_id]['icon'] = str(sensor.get('icon', 'mdi:fire-truck'))
             self.sensors[sensor_id]['sent_HA_discovery'] = False
 
+        # Build dict of TTS settings config
+        self.tts_replacements = list()
+
+        # Load all TTS settings
+        for tts_replacement in self.config['tts_replacements']:
+            self.tts_replacements.append(tts_replacement.copy())
+
+        log_message('{} TTS replacements loaded from config.'.format(len(self.tts_replacements)), True)
+
+        for tts in self.tts_replacements:
+            log_message('    Pattern: {}, Replacement: {}'.format(tts['pattern'], tts['replacement']), True)
+
         # Init MQTT
         self.mqtt_sender = MqttSender(self.config['mqtt'], self.debug)
         availability_topic = '{}/status'.format(self.config['mqtt']['base_topic'])
@@ -772,6 +785,7 @@ class Main:
                 "opencage": msg.opencage,
                 "mapurl": msg.mapurl,
                 "distance": msg.distance,
+                "tts": msg.tts,
             }
 
             if self.config['mqtt']['ha_autodiscovery']:
@@ -945,8 +959,8 @@ class Main:
                     result = self.database.find_capcode(capcode)
                     if result:
                         log_message(f"Capcode {capcode}: Disc: '{result['discipline']}' Reg: '{result['region']}' Loc: '{result['location']}' Descr: '{result['description']}' Remark: '{result['remark']}'", self.debug)
-                        description = f"{result['discipline']} ({capcode})"
-                        discipline = result['description']
+                        description = f"{result['description']} ({capcode})"
+                        discipline = result['discipline']
                         region = result['region']
                         location = result['location']
                         remark = result['remark']
@@ -1099,6 +1113,11 @@ class Main:
                     else:
                         geocoded = False
 
+                    #Replace all TTS replacement
+                    tts = message
+                    for tts_replacement in self.tts_replacements:
+                        tts = re.sub(tts_replacement['pattern'], tts_replacement['replacement'], tts)
+  
                     opencage = f"enabled: {self.use_opencage} ratelimit: {self.opencage_disabled} ({rate_remaining}) geocoded: {geocoded}"
 
                     msg = MessageItem()
@@ -1123,6 +1142,7 @@ class Main:
                     msg.timestamp = to_local_datetime(timestamp)
                     msg.is_posted = False
                     msg.distance = distance
+                    msg.tts = tts
                     self.messages.insert(0, msg)
 
             # TODO

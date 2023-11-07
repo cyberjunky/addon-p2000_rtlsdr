@@ -82,6 +82,13 @@ p2000_sensors:
     name: P2000 Rotterdam-Rijnmond
     icon: mdi:map-marker-radius-outline
     region: Rotterdam-Rijnmond
+tts_replacements:
+  - pattern: P 1
+    replacement: Prio 1
+  - pattern: P 2
+    replacement: Prio 2
+  - pattern: BOB\-[0-9][0-9]\s
+    replacement: ""      
 ```
 
 Note: This is just an example, don't copy and paste it! Create your own!
@@ -251,6 +258,15 @@ NOTE: `location` data comes from the local database and is not the same as addre
 ### Option `p2000_sensors`: `remark`
 This one is optional too. You can specify one or more remark texts seperated by comma's, if at least one of them matches the remark data linked to the capcode in the message received -and any other criteria (if any) for this sensor matches- the message text and it's attributes are applied to the sensor.
 This is a free text field, only a few are filled-in but these are often specific ones like `Narcotica team`, `Onderhandelaar`, `First-Responders`
+
+### Option `tts_replacements`
+TTS replacements can be used to change the message to a string which can be used to speak the alarm message. It can be used for example to change the firefighter designations to a text better suitable for speaking (e.g. 224541 to 45 41) or remove the incident channel from the message (e.g. BOB-02).
+
+### Option `tts_replacements`: `pattern`
+The pattern to search for in the message
+
+### Option `tts_replacements`: `replacement`
+The replacement, use an empty string to completely remove part of the message (e.g. the incident channel)
 
 
 NOTE: `region`, `discipline`, `location` and `remark` information is looked-up in a local database using the `capcodes` retrieved from the messages. It's not available in the over-the-air traffic, so it can be incomplete, outdated and incorrect.

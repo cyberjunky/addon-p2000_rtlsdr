@@ -1,5 +1,5 @@
 name: "P2000 RTL-SDR"
-version: "1.0.1"
+version: "1.0.2"
 slug: "p2000_rtlsdr"
 description: "Receive P2000 events using Home Assistant and your RTL-SDR dongle"
 startup: application
@@ -61,6 +61,13 @@ options:
       name: P2000 Brandweer
       icon: mdi:fire-truck
       discipline: "Brandweer"
+  tts_replacements:
+    - pattern: P1
+      replacement: Prio 1
+    - pattern: P2
+      replacement: Prio 2
+    - pattern: BOB\-[0-9][0-9]\s
+      replacement: ""
 
 schema:
   general:
@@ -97,4 +104,6 @@ schema:
       zone_radius: float?
       zone_latitude: float?
       zone_longitude: float?
-
+  tts_replacements:
+    - pattern: str
+      replacement: str
