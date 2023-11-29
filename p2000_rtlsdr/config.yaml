@@ -1,5 +1,5 @@
 name: "P2000 RTL-SDR"
-version: "1.0.2"
+version: "1.0.3"
 slug: "p2000_rtlsdr"
 description: "Receive P2000 events using Home Assistant and your RTL-SDR dongle"
 startup: application
@@ -30,6 +30,7 @@ options:
     ha_autodiscovery_topic: homeassistant
     base_topic: p2000_rtlsdr
     tls_enabled: false
+    retain: false
   rtlsdr:
     cmd: "rtl_fm -f 169.65M -M fm -s 22050 | multimon-ng -a FLEX -t raw -"
   opencage:
@@ -85,6 +86,7 @@ schema:
     tls_cert: str?
     tls_keyfile: str?
     tls_insecure: bool?
+    retain: bool?
   rtlsdr:
     cmd: str
   opencage:
