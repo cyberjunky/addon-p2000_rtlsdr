@@ -203,29 +203,34 @@ class ForbiddenError(OpenCageGeocodeError):
 def OpenCageGeocode(query, key):
 
         params =  { 'q': query, 'key': key, 'limit': 1, 'country': 'nl', 'language': 'nl' }
-        response = requests.get('https://api.opencagedata.com/geocode/v1/json', params=params, timeout=5)
+        response_json = {}
 
         try:
+            response = requests.get('https://api.opencagedata.com/geocode/v1/json', params=params, timeout=5)
             response_json = response.json()
+        except requests.exceptions.Timeout:
+            log_message("Timeout occurred while fetching data from OpenCage")
+
+        except requests.exceptions.HTTPError:
+            if response.status_code == 401:
+                raise NotAuthorizedError()
+    
+            if response.status_code == 403:
+                raise ForbiddenError()
+    
+            if response.status_code in (402, 429):
+                # Rate limit exceeded
+                reset_time = datetime.utcfromtimestamp(response.json()['rate']['reset'])
+                raise RateLimitExceededError(
+                    reset_to=int(response.json()['rate']['limit']),
+                    reset_time=reset_time
+                )
+    
+            if response.status_code == 500:
+                raise UnknownError("500 status code from API")
+
         except ValueError as excinfo:
             raise UnknownError("Non-JSON result from server") from excinfo
-
-        if response.status_code == 401:
-            raise NotAuthorizedError()
-
-        if response.status_code == 403:
-            raise ForbiddenError()
-
-        if response.status_code in (402, 429):
-            # Rate limit exceeded
-            reset_time = datetime.utcfromtimestamp(response.json()['rate']['reset'])
-            raise RateLimitExceededError(
-                reset_to=int(response.json()['rate']['limit']),
-                reset_time=reset_time
-            )
-
-        if response.status_code == 500:
-            raise UnknownError("500 status code from API")
 
         if 'results' not in response_json:
             raise UnknownError("JSON from API doesn't have a 'results' key")
