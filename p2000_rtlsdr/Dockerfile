@@ -10,7 +10,7 @@ RUN apk update && \
 
 # Install rtl-sdr software
 RUN cd /tmp && \
-    git clone git://git.osmocom.org/rtl-sdr.git && \
+    git clone https://gitea.osmocom.org/sdr/rtl-sdr.git && \
     cd rtl-sdr && \
     mkdir build && \
     cd build && \
