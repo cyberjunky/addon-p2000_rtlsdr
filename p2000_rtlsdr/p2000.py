@@ -210,7 +210,8 @@ def OpenCageGeocode(query, key):
             response_json = response.json()
         except requests.exceptions.Timeout:
             log_message("Timeout occurred while fetching data from OpenCage")
-
+        except requests.exceptions.ConnectionError:
+            log_message("Connection error occurred while fetching data from OpenCage")
         except requests.exceptions.HTTPError:
             if response.status_code == 401:
                 raise NotAuthorizedError()
