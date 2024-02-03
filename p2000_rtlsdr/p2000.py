@@ -42,8 +42,7 @@ class Database:
 
         if not os.path.exists(dbpath):
             log_message(f"Installing the database '{dbpath}'")
-            proc = subprocess.Popen('cp /p2000.sqlite3 /data/p2000.sqlite3', shell=True, stdin=None, stdout=None, stderr=None, executable="/bin/bash")
-            proc.wait()
+            os.popen('cp /p2000.sqlite3 /data/p2000.sqlite3') 
 
         try:
             dbconnection = sqlite3.connect(f"file:{dbpath}?mode=rw", uri=True)
@@ -134,7 +133,6 @@ class MessageItem:
         self.opencage = ""
         self.mapurl = ""
         self.distance = ""
-        self.tts = ""
 
 
 class OpenCageGeocodeError(Exception):
@@ -154,7 +152,7 @@ class InvalidInputError(OpenCageGeocodeError):
     __str__ = __unicode__
 
 
-class UnknownError(OpenCageGeocodeError):
+class GeocodeError(OpenCageGeocodeError):
     """There was a problem with the OpenCage server."""
 
 
@@ -202,38 +200,38 @@ class ForbiddenError(OpenCageGeocodeError):
 
 def OpenCageGeocode(query, key):
 
-        params =  { 'q': query, 'key': key, 'limit': 1, 'country': 'nl', 'language': 'nl' }
         response_json = {}
 
+        params =  { 'q': query, 'key': key, 'limit': 1, 'country': 'nl', 'language': 'nl' }
+        response = requests.get('https://api.opencagedata.com/geocode/v1/json', params=params, timeout=5)
+
         try:
-            response = requests.get('https://api.opencagedata.com/geocode/v1/json', params=params, timeout=5)
             response_json = response.json()
-        except requests.exceptions.Timeout:
-            log_message("Timeout occurred while fetching data from OpenCage")
+        except ValueError as err:
+            raise GeocodeError("Non-JSON result from server") from err
+        except requests.exceptions.ReadTimeout as err:
+            raise GeocodeError("Read timeout from client") from err
+        except requests.exceptions.ConnectionError as err:
+            raise GeocodeError("Connection error while connecting") from err
+        if response.status_code == 401:
+            raise NotAuthorizedError()
 
-        except requests.exceptions.HTTPError:
-            if response.status_code == 401:
-                raise NotAuthorizedError()
-    
-            if response.status_code == 403:
-                raise ForbiddenError()
-    
-            if response.status_code in (402, 429):
-                # Rate limit exceeded
-                reset_time = datetime.utcfromtimestamp(response.json()['rate']['reset'])
-                raise RateLimitExceededError(
-                    reset_to=int(response.json()['rate']['limit']),
-                    reset_time=reset_time
-                )
-    
-            if response.status_code == 500:
-                raise UnknownError("500 status code from API")
+        if response.status_code == 403:
+            raise ForbiddenError()
 
-        except ValueError as excinfo:
-            raise UnknownError("Non-JSON result from server") from excinfo
+        if response.status_code in (402, 429):
+            # Rate limit exceeded
+            reset_time = datetime.utcfromtimestamp(response.json()['rate']['reset'])
+            raise RateLimitExceededError(
+                reset_to=int(response.json()['rate']['limit']),
+                reset_time=reset_time
+            )
+
+        if response.status_code == 500:
+            raise GeocodeError("500 status code from API")
 
         if 'results' not in response_json:
-            raise UnknownError("JSON from API doesn't have a 'results' key")
+            raise GeocodeError("JSON from API doesn't have a 'results' key")
 
         return response_json
 
@@ -297,7 +295,7 @@ def p2000_get_prio(message):
 
 
 def reset_usb_device(usbdev):
-    """Reset USB device."""
+    """Rest USB device."""
 
     if usbdev is not None and ':' in usbdev:
         busnum, devnum = usbdev.split(':')
@@ -367,7 +365,8 @@ class MqttSender:
         self.d['client_id'] = mqtt_config.get('client_id', 'p2000_rtlsdr')
         self.d['base_topic'] = mqtt_config.get('base_topic', 'p2000_rtlsdr')
         self.d['availability_topic'] = '{}/status'.format(self.d['base_topic'])
-        tls_enabled = mqtt_config.get('tls_enabled', False)
+        tls_enabled = mqtt_config.get('retain', False)
+        mqtt_retain = mqtt_config.get('tls_enabled', False)
         tls_ca = mqtt_config.get('tls_ca', '/etc/ssl/certs/ca-certificates.crt')
         tls_cert = mqtt_config.get('tls_cert', None)
         cert_reqs = ssl.CERT_NONE if mqtt_config.get('tls_insecure', True) else ssl.CERT_REQUIRED
@@ -395,7 +394,7 @@ class MqttSender:
         topic = kwargs.get('topic')
         payload = kwargs.get('payload', None)
         qos = int(kwargs.get('qos', 0))
-        retain = kwargs.get('retain', False)
+        retain = kwargs.get('retain', self.mqtt_retain)
         will = { 'topic': self.d['availability_topic'], 'payload': 'offline', 'qos': 1, 'retain': True }
         try:
             publish.single(
@@ -555,18 +554,6 @@ class Main:
             self.sensors[sensor_id]['name'] = sensor_name
             self.sensors[sensor_id]['icon'] = str(sensor.get('icon', 'mdi:fire-truck'))
             self.sensors[sensor_id]['sent_HA_discovery'] = False
-
-        # Build dict of TTS settings config
-        self.tts_replacements = list()
-
-        # Load all TTS settings
-        for tts_replacement in self.config['tts_replacements']:
-            self.tts_replacements.append(tts_replacement.copy())
-
-        log_message('{} TTS replacements loaded from config.'.format(len(self.tts_replacements)), True)
-
-        for tts in self.tts_replacements:
-            log_message('    Pattern: {}, Replacement: {}'.format(tts['pattern'], tts['replacement']), True)
 
         # Init MQTT
         self.mqtt_sender = MqttSender(self.config['mqtt'], self.debug)
@@ -790,7 +777,6 @@ class Main:
                 "opencage": msg.opencage,
                 "mapurl": msg.mapurl,
                 "distance": msg.distance,
-                "tts": msg.tts,
             }
 
             if self.config['mqtt']['ha_autodiscovery']:
@@ -812,8 +798,8 @@ class Main:
 
             attribute_topic = 'homeassistant/sensor/' + self.sensors[id]['attribute_topic']
             state_topic = 'homeassistant/sensor/' + self.sensors[id]['state_topic']
-            self.mqtt_sender.publish(topic=attribute_topic, payload=json.dumps(attributes), retain=True)
-            self.mqtt_sender.publish(topic=state_topic, payload=msg.body, retain=True)
+            self.mqtt_sender.publish(topic=attribute_topic, payload=json.dumps(attributes))
+            self.mqtt_sender.publish(topic=state_topic, payload=msg.body)
 
             log_message(f"Sensor '{self.sensors[id]['name']}': '{msg.body}'", self.debug)
 
@@ -964,8 +950,8 @@ class Main:
                     result = self.database.find_capcode(capcode)
                     if result:
                         log_message(f"Capcode {capcode}: Disc: '{result['discipline']}' Reg: '{result['region']}' Loc: '{result['location']}' Descr: '{result['description']}' Remark: '{result['remark']}'", self.debug)
-                        description = f"{result['description']} ({capcode})"
-                        discipline = result['discipline']
+                        description = f"{result['discipline']} ({capcode})"
+                        discipline = result['description']
                         region = result['region']
                         location = result['location']
                         remark = result['remark']
@@ -1113,16 +1099,11 @@ class Main:
                             log_message(err, True)
                             # Rate limit reached, disable opencage until midnight
                             self.opencage_disabled = True
-                        except (InvalidInputError, NotAuthorizedError, ForbiddenError, UnknownError) as err:
+                        except (InvalidInputError, NotAuthorizedError, ForbiddenError, GeocodeError) as err:
                             log_message(err, True)
                     else:
                         geocoded = False
 
-                    #Replace all TTS replacement
-                    tts = message
-                    for tts_replacement in self.tts_replacements:
-                        tts = re.sub(tts_replacement['pattern'], tts_replacement['replacement'], tts)
-  
                     opencage = f"enabled: {self.use_opencage} ratelimit: {self.opencage_disabled} ({rate_remaining}) geocoded: {geocoded}"
 
                     msg = MessageItem()
@@ -1147,7 +1128,6 @@ class Main:
                     msg.timestamp = to_local_datetime(timestamp)
                     msg.is_posted = False
                     msg.distance = distance
-                    msg.tts = tts
                     self.messages.insert(0, msg)
 
             # TODO
