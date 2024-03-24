@@ -1054,6 +1054,7 @@ class Main:
                             if int(locations['total_results']) > 0:
 
                                 postcode = ""
+                                road = ""
                                 oc_address = ""
                                 datatype = locations['results'][0]['components']['_type']
 
