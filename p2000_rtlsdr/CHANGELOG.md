@@ -1,4 +1,6 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
+## 1.0.6
+- Fixed "UnboundLocalError: cannot access local variable 'road' where it is not associated with a value"
 ## 1.0.5
 - Better error ConnectionError catching for opencage
 ## 1.0.4
