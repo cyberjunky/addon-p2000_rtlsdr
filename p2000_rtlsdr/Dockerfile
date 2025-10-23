@@ -41,9 +41,12 @@ COPY sdl_ids.txt /var/lib/
 COPY p2000.py /
 COPY p2000.sqlite3 /
 COPY p2000.py /
+COPY entrypoint.sh /entrypoint.sh
+COPY watchdog.sh /watchdog.sh
 
-RUN chmod a+x /p2000.py
-ENTRYPOINT ["/p2000.py"]
+RUN chmod a+x /entrypoint.sh /watchdog.sh /p2000.py
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
