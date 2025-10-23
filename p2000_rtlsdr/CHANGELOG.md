@@ -1,4 +1,6 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
+## 1.0.9
+- Adds watchdog to keep an eye on the log
 ## 1.0.6
 - Fixed "UnboundLocalError: cannot access local variable 'road' where it is not associated with a value"
 ## 1.0.5
