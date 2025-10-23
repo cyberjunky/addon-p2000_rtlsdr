@@ -8,7 +8,7 @@ map:
   - config:rw
   - share:rw
   - ssl
-url: https://github.com/cyberjunky/addon-p2000_rtlsdr
+url: https://github.com/Mik3yZ/addon-p2000_rtlsdr
 # uart: true
 udev: true
 usb: true
