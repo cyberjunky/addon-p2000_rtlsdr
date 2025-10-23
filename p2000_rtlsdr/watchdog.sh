@@ -1,13 +1,12 @@
 #!/bin/bash
 
-LOG_PATTERN="rtlsdr_read_reg failed"
+LOG_PATTERN="cb transfer status: 5, canceling..."
 ADDON_RESTART_URL="http://supervisor/addons/self/restart"
 AUTH_HEADER="Authorization: Bearer $SUPERVISOR_TOKEN"
 
-# Monitor the container's stdout log (fd 1)
-# You can also adapt this if your app logs to a file instead
+# Monitor the container's stdout log (fd 1) and stderr (fd 2)
 
-tail -F /proc/1/fd/1 | while read -r line
+tail -F /proc/1/fd/1 /proc/1/fd/2 | while read -r line
 do
   echo "$line" | grep -q "$LOG_PATTERN"
   if [ $? -eq 0 ]; then
