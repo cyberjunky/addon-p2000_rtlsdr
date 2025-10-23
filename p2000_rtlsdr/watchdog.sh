@@ -13,9 +13,9 @@ cat /proc/${PID}/fd/2 | while read -r line
 do
   echo "$line" | grep -q "$LOG_PATTERN"
   if [ $? -eq 0 ]; then
-    echo "Error pattern detected, restarting addon..."
+    echo "Error pattern detected, restarting addon... in 5 seconds"
+    sleep 5
     curl -X POST -H "$AUTH_HEADER" -H "Content-Type: application/json" "$ADDON_RESTART_URL"
-    # Optionally add delay or exit here to avoid rapid restarts
     sleep 30
   fi
 done
