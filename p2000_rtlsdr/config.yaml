@@ -1,5 +1,5 @@
 name: "P2000 RTL-SDR"
-version: "1.0.8"
+version: "1.0.9"
 slug: "p2000_rtlsdr"
 description: "Receive P2000 events using Home Assistant and your RTL-SDR dongle"
 startup: application
