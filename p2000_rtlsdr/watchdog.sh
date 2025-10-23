@@ -4,9 +4,12 @@ LOG_PATTERN="cb transfer status: 5, canceling..."
 ADDON_RESTART_URL="http://supervisor/addons/self/restart"
 AUTH_HEADER="Authorization: Bearer $SUPERVISOR_TOKEN"
 
+# get p2000.py PID
+PID=`ps | grep p2000.py | grep -v grep | awk '{print $1}'`
+
 # Monitor the container's stdout log (fd 1) and stderr (fd 2)
 
-tail -F /proc/1/fd/1 /proc/1/fd/2 | while read -r line
+cat /proc/${PID}/fd/2 | while read -r line
 do
   echo "$line" | grep -q "$LOG_PATTERN"
   if [ $? -eq 0 ]; then
