@@ -4,4 +4,4 @@
 /p2000.py &
 
 # Start the watchdog in the foreground to keep the container running
-/usr/local/bin/watchdog.sh
+/watchdog.sh
