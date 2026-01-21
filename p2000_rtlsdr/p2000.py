@@ -520,6 +520,9 @@ class Main:
             if 'token' in self.config['opencage']:
                 self.opencagetoken = self.config['opencage']['token']
 
+        # MQTT retain setting
+        self.mqtt_retain = self.config['mqtt'].get('retain', False)
+
         # Load capcodes ignore data
         self.ignorecapcodes = ''
         if 'p2000_global_filters' in self.config:
@@ -813,8 +816,8 @@ class Main:
 
             attribute_topic = 'homeassistant/sensor/' + self.sensors[id]['attribute_topic']
             state_topic = 'homeassistant/sensor/' + self.sensors[id]['state_topic']
-            self.mqtt_sender.publish(topic=attribute_topic, payload=json.dumps(attributes), retain=True)
-            self.mqtt_sender.publish(topic=state_topic, payload=msg.body, retain=True)
+            self.mqtt_sender.publish(topic=attribute_topic, payload=json.dumps(attributes), retain=self.mqtt_retain)
+            self.mqtt_sender.publish(topic=state_topic, payload=msg.body, retain=self.mqtt_retain)
 
             log_message(f"Sensor '{self.sensors[id]['name']}': '{msg.body}'", self.debug)
 
