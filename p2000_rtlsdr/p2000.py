@@ -221,7 +221,7 @@ def OpenCageGeocode(query, key):
     
             if response.status_code in (402, 429):
                 # Rate limit exceeded
-                reset_time = datetime.utcfromtimestamp(response.json()['rate']['reset'])
+                reset_time = datetime.fromtimestamp(response.json()['rate']['reset'], tz=timezone.utc)
                 raise RateLimitExceededError(
                     reset_to=int(response.json()['rate']['limit']),
                     reset_time=reset_time
@@ -1006,7 +1006,7 @@ class Main:
                 else:
                     # TODO
                     # After midnight (UTC), reset the opencage disable
-                    hour = datetime.now(timezone.utc).replace(tzinfo=None)
+                    hour = datetime.now(timezone.utc)
                     if (
                         hour.hour >= 0
                         and hour.minute >= 1
