@@ -98,10 +98,10 @@ class Database:
 
         return self.cursor.execute(f"SELECT latitude, longitude, address, mapurl FROM geocodes WHERE query = '{address}'").fetchone()
 
-    def store_geocode(self, query, datatype, latitude, longitude, postalcode, street, city, address, mapurl):
+    def store_geocode(self, query, datatype, longitude, latitude, postalcode, street, city, address, mapurl):
         """Save all info we have for an address."""
 
-        values = (query, datatype, latitude, longitude, postalcode, street, city, address, mapurl)
+        values = (query, datatype, longitude, latitude, postalcode, street, city, address, mapurl)
         query = "INSERT INTO geocodes VALUES (?,?,?,?,?,?,?,?,?)"
 
         self.cursor.execute(query, values)
@@ -1087,7 +1087,7 @@ class Main:
                                     )
 
                                     try:
-                                        self.database.store_geocode(address, datatype, str(latitude), str(longitude), postcode, street, plaats, oc_address, mapurl)
+                                        self.database.store_geocode(address, datatype, str(longitude), str(latitude), postcode, street, plaats, oc_address, mapurl)
 
                                         geocoded = True
                                     except:

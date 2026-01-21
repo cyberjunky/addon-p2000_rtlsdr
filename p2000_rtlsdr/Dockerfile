@@ -1,12 +1,12 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 # Install base system
 RUN apk update && \
     apk upgrade && \
-    apk add --no-cache --virtual build-deps alpine-sdk cmake git libusb-dev qt5-qtbase-dev pulseaudio-dev
+    apk add --no-cache --virtual build-deps alpine-sdk cmake git libusb-dev pulseaudio-dev
 
 # Install rtl-sdr software
 RUN cd /tmp && \
@@ -26,15 +26,15 @@ RUN cd /tmp && \
     cd multimon-ng && \
     mkdir build && \
     cd build && \
-    /usr/lib/qt5/bin/qmake ../multimon-ng.pro && \
+    cmake .. && \
     make && \
     make install && \
     cd / && \
     rm -r /tmp/multimon-ng
 
 # Cleanup build environment and install runtimes instead
-RUN apk del build-deps alpine-sdk cmake git libusb-dev qt5-qtbase-dev pulseaudio-dev && \
-    apk add --no-cache libusb gcc pulseaudio qt5-qtbase py3-yaml py3-geopy py3-usb py3-paho-mqtt py3-requests sqlite
+RUN apk del build-deps alpine-sdk cmake git libusb-dev pulseaudio-dev && \
+    apk add --no-cache libusb gcc pulseaudio py3-yaml py3-geopy py3-usb py3-paho-mqtt py3-requests sqlite
 
 # Install the add-on code and data
 COPY sdl_ids.txt /var/lib/
