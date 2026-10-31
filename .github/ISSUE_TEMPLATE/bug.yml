@@ -39,7 +39,7 @@ body:
   attributes:
     label: Checklist
     options:
-      - label: I have enabled debug logging (`verbosity: debug`) and reviewed the logs.
+      - label: "I have enabled debug logging (`verbosity: debug`) and reviewed the logs."
         required: true
       - label: I have filled out the issue template to the best of my ability.
         required: true
